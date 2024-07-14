@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fastify Template</title>
+    <title>SPOTAPI</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css"
@@ -44,28 +44,26 @@
   </head>
   <body class="markdown-body">
     <main>
-      <h1>Fastify Template</h1>
+      <h1>SPOTAPI</h1>
       <p>
-        A powerful and easy-to-use template for creating Fastify applications.
-        It includes everything you need to get started. It is also highly
-        customizable, so you can easily add your own features and functionality.
+        You may use the generated key (by adding query key) instead of adding
+        authorization header for accessing spotify apis. This may be a flow, so
+        this application was designed to only read your activities.
       </p>
-      <a href="/docs" id="swagger" title="GET /docs"> View swagger </a>
+      <ul>
+        <li>
+          <a href="/spotify/login">Login</a>
+        </li>
+        <li>
+          Proxied endpoint: <code>/spotify/api</code>->
+          <code>https://api.spotify.com/v1</code>
+        </li>
+      </ul>
+      <hr />
+      <h3>Sample usage</h3>
+      <pre>
+curl https://spotapi-one.vercel.app/spotify/api/me/player?key=000000</pre
+      >
     </main>
-    <a
-      href="https://github.com/jmrl23/fastify-template"
-      target="_blank"
-      id="github-fork"
-      title="Fork me on Github"
-      ><img
-        decoding="async"
-        width="149"
-        height="149"
-        src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149"
-        class="attachment-full size-full"
-        alt="Fork me on GitHub"
-        loading="lazy"
-        data-recalc-dims="1"
-    /></a>
   </body>
 </html>

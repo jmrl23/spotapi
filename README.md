@@ -1,11 +1,8 @@
-# Fastify Application Template
+# SPOTAPI
 
-Simple starter template for fastify application.
+Spotify API proxy server
 
-<picture>
-  <source srcset="https://fastify.dev/img/logos/fastify-white.svg" media="(prefers-color-scheme: dark)" />
-  <img src="https://fastify.dev/img/logos/fastify-black.svg" />
-</picture>
+[![Banner](https://media.giphy.com/media/Lx73iEujYXQK4/giphy.gif?cid=790b7611ev5yhaa3z4jlv2galwm60xmtjym3ay1s01nauplx&ep=v1_gifs_search&rid=giphy.gif&ct=g)](https://github.com/jmrl23/spotapi)
 
 ## Installation
 
