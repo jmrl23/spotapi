@@ -32,6 +32,7 @@
     "@fastify/swagger-ui": "^4.0.0",
     "@jmrl23/redis-store": "^2.3.4",
     "@prisma/client": "^5.16.2",
+    "axios": "^1.7.2",
     "cache-manager": "^5.7.1",
     "colorette": "^2.0.20",
     "detect-port": "^1.6.1",

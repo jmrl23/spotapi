@@ -11,6 +11,7 @@ import {
 import { prismaClient } from '../lib/prisma';
 import type CacheService from './CacheService';
 import scope from '../lib/scope.json';
+import axios from 'axios';
 
 interface Ref
   extends Prisma.ReferenceGetPayload<{
@@ -28,33 +29,38 @@ interface OptionsWithRevalidate {
   revalidate?: boolean;
 }
 
+const accountsApi = axios.create({
+  baseURL: 'https://accounts.spotify.com/api',
+  headers: {
+    'content-type': 'application/x-www-form-urlencoded',
+    authorization: `Basic ${Buffer.from(
+      SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET,
+    ).toString('base64')}`,
+  },
+});
+
 export default class SpotifyService {
   constructor(private readonly cacheService: CacheService) {}
 
   public async createRef(code: string): Promise<Ref> {
-    const key = SpotifyService.rs(6);
+    const key = SpotifyService.randomString(6);
     const existing = await prismaClient.reference.findUnique({
       where: { key },
       select: { id: true },
     });
     if (existing) return await this.createRef(code);
 
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        authorization: `Basic ${Buffer.from(
-          SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET,
-        ).toString('base64')}`,
-      },
-      body: qs.stringify({
+    const response = await accountsApi.post(
+      '/token',
+      qs.stringify({
         code,
         redirect_uri: SPOTIFY_REDIRECT_URI,
         grant_type: 'authorization_code',
       }),
-    });
-    const data = await response.json();
-    const { refresh_token: refreshToken, access_token: accessToken } = data;
+    );
+
+    const { refresh_token: refreshToken, access_token: accessToken } =
+      response.data;
     if (!refreshToken || !accessToken)
       throw new Unauthorized('Failed to generate tokens');
 
@@ -86,22 +92,15 @@ export default class SpotifyService {
 
       if (!oldRef) throw new Error();
 
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded',
-          authorization: `Basic ${Buffer.from(
-            SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET,
-          ).toString('base64')}`,
-        },
-        body: qs.stringify({
+      const response = await accountsApi.post(
+        '/token',
+        qs.stringify({
           grant_type: 'refresh_token',
           refresh_token: oldRef.refreshToken,
         }),
-      });
+      );
 
-      const { access_token } = await response.json();
-
+      const { access_token } = response.data;
       const ref = await prismaClient.reference.update({
         where: { id },
         data: { accessToken: access_token },
@@ -175,11 +174,11 @@ export default class SpotifyService {
       client_id: SPOTIFY_CLIENT_ID,
       scope: scope.join(' '),
       redirect_uri: SPOTIFY_REDIRECT_URI,
-      state: SpotifyService.rs(16),
+      state: SpotifyService.randomString(16),
     })}`;
   }
 
-  private static rs(length: number): string {
+  private static randomString(length: number): string {
     const randomBytes = crypto.randomBytes(Math.ceil(length / 2));
     return randomBytes.toString('hex').slice(0, length);
   }
