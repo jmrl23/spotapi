@@ -30,6 +30,7 @@ export default fastifyPlugin(async function swagger(app) {
         // },
       },
     },
+    hideUntagged: true,
   });
 
   await app.register(fastifySwaggerUi, { routePrefix: '/docs' });

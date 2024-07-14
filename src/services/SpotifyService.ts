@@ -1,11 +1,16 @@
 import type { Prisma } from '@prisma/client';
-import { NotFound } from 'http-errors';
+import { NotFound, Unauthorized } from 'http-errors';
 import ms from 'ms';
 import crypto from 'node:crypto';
 import qs from 'qs';
-import { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } from '../lib/constant/env';
+import {
+  SPOTIFY_CLIENT_ID,
+  SPOTIFY_CLIENT_SECRET,
+  SPOTIFY_REDIRECT_URI,
+} from '../lib/constant/env';
 import { prismaClient } from '../lib/prisma';
 import type CacheService from './CacheService';
+import scope from '../lib/scope.json';
 
 interface Ref
   extends Prisma.ReferenceGetPayload<{
@@ -26,22 +31,35 @@ interface OptionsWithRevalidate {
 export default class SpotifyService {
   constructor(private readonly cacheService: CacheService) {}
 
-  public async createRef(
-    refreshToken: string,
-    accessToken: string,
-  ): Promise<Ref> {
+  public async createRef(code: string): Promise<Ref> {
     const key = SpotifyService.rs(6);
     const existing = await prismaClient.reference.findUnique({
       where: { key },
       select: { id: true },
     });
-    if (existing) return await this.createRef(refreshToken, accessToken);
-    const ref = await prismaClient.reference.create({
-      data: {
-        key,
-        refreshToken,
-        accessToken,
+    if (existing) return await this.createRef(code);
+
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        authorization: `Basic ${Buffer.from(
+          SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET,
+        ).toString('base64')}`,
       },
+      body: qs.stringify({
+        code,
+        redirect_uri: SPOTIFY_REDIRECT_URI,
+        grant_type: 'authorization_code',
+      }),
+    });
+    const data = await response.json();
+    const { refresh_token: refreshToken, access_token: accessToken } = data;
+    if (!refreshToken || !accessToken)
+      throw new Unauthorized('Failed to generate tokens');
+
+    const ref = await prismaClient.reference.create({
+      data: { key, refreshToken, accessToken },
     });
     await this.cacheService.set(`reference:[ref:id]:${ref.id}`, ref, ms('55m'));
     return ref;
@@ -151,7 +169,17 @@ export default class SpotifyService {
     return ref;
   }
 
-  public static rs(length: number): string {
+  public generateAuthorizeUrl(): string {
+    return `https://accounts.spotify.com/authorize?${qs.stringify({
+      response_type: 'code',
+      client_id: SPOTIFY_CLIENT_ID,
+      scope: scope.join(' '),
+      redirect_uri: SPOTIFY_REDIRECT_URI,
+      state: SpotifyService.rs(16),
+    })}`;
+  }
+
+  private static rs(length: number): string {
     const randomBytes = crypto.randomBytes(Math.ceil(length / 2));
     return randomBytes.toString('hex').slice(0, length);
   }
