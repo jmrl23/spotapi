@@ -1,5 +1,6 @@
 import type { FastifyRequest } from 'fastify';
 import { asRoute } from '../lib/util/typings';
+import spotifyApiProxy from '../plugins/spotifyApiProxy';
 import {
   type SpotifyCallbackQuery,
   spotifyCallbackQuerySchema,
@@ -8,6 +9,8 @@ import {
 export const prefix = '/spotify';
 
 export default asRoute(async function spotifyRoute(app) {
+  await app.register(spotifyApiProxy);
+
   app
 
     .route({

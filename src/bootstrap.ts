@@ -9,7 +9,6 @@ import logger from './lib/util/logger';
 import middleware from './plugins/middleware';
 import routes from './plugins/routes';
 import swagger from './plugins/swagger';
-import spotifyApiProxy from './plugins/spotifyApiProxy';
 import spotifyService from './plugins/spotifyService';
 
 export default fastifyPlugin(async function bootstrap(app) {
@@ -31,8 +30,6 @@ export default fastifyPlugin(async function bootstrap(app) {
       }
     },
   });
-
-  await app.register(spotifyApiProxy);
 
   await app.register(fastifyStatic, {
     root: path.resolve(__dirname, '../public'),
