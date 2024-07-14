@@ -32,16 +32,16 @@ export default asRoute(async function badgeRoute(app) {
         return {
           schemaVersion: 1,
           namedLogo: 'spotify',
-          label: 'not listening',
-          message: 'inactive',
+          label: 'not playing',
+          message: 'spotify',
         };
       }
 
-      const message = `${data.item.artists[0].name} - ${data.item.name}`;
+      const message = `${data.item.name} | ${data.item.artists[0].name}`;
       return {
         schemaVersion: 1,
         namedLogo: 'spotify',
-        label: 'listening',
+        label: 'playing',
         message,
         color: 'blue',
       };
