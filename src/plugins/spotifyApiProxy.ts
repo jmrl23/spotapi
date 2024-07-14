@@ -2,7 +2,7 @@ import fastifyHttpProxy from '@fastify/http-proxy';
 import fastifyPlugin from 'fastify-plugin';
 
 export default fastifyPlugin(async function spotifyApiProxy(app) {
-  const authorization = new Map<string, string|undefined>();
+  const authorization = new Map<string, string | undefined>();
 
   await app.register(fastifyHttpProxy, {
     upstream: 'https://api.spotify.com',
@@ -21,10 +21,7 @@ export default fastifyPlugin(async function spotifyApiProxy(app) {
 
         const extraHeaders: Record<string, string> = {};
         const auth = authorization.get(query.key);
-        
-        if (auth) {
-          extraHeaders['authorization'] = `Bearer ${auth}`;
-        }
+        if (auth) extraHeaders['authorization'] = `Bearer ${auth}`;
 
         return {
           ...headers,

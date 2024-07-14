@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import axios from 'axios';
 import { NotFound, Unauthorized } from 'http-errors';
 import ms from 'ms';
 import crypto from 'node:crypto';
@@ -9,9 +10,8 @@ import {
   SPOTIFY_REDIRECT_URI,
 } from '../lib/constant/env';
 import { prismaClient } from '../lib/prisma';
-import type CacheService from './CacheService';
 import scope from '../lib/scope.json';
-import axios from 'axios';
+import type CacheService from './CacheService';
 
 interface Ref
   extends Prisma.ReferenceGetPayload<{
