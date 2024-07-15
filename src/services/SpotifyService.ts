@@ -217,19 +217,29 @@ export default class SpotifyService {
         schemaVersion: 1,
         namedLogo: 'spotify',
         label: 'Not Playing',
-        message: 'Spotify',
+        message: 'Offline',
         style: 'for-the-badge',
+        color: 'cccccc',
       };
     }
 
     const playing = player.is_playing;
-    let message: string = '';
+    const colors = [
+      'ff0000',
+      '00ff00',
+      '0000ff',
+      'ffff00',
+      '800080',
+      'ffa500',
+    ] as const;
+    const color = colors[Math.round(Math.random() * (colors.length - 1))];
+    let message: string = '-';
 
     if (player.item) {
       if ('artists' in player.item) {
         const song = player.item.name;
         const artist = player.item.artists.at(0)?.name;
-        message += song;
+        message = song;
         if (artist) message += ` • ${artist}`;
       } else {
         const show = player.item.show;
@@ -243,7 +253,7 @@ export default class SpotifyService {
       namedLogo: 'spotify',
       label: playing ? 'Playing' : 'Paused',
       message,
-      color: 'blue',
+      color,
       style: 'for-the-badge',
     };
   }
