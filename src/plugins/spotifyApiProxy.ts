@@ -1,12 +1,11 @@
 import fastifyHttpProxy from '@fastify/http-proxy';
 import fastifyPlugin from 'fastify-plugin';
-import { SPOTIFY_API_URL } from '../lib/constant/spotify';
 
 export default fastifyPlugin(async function spotifyApiProxy(app) {
   const authorization = new Map<string, string | undefined>();
 
   await app.register(fastifyHttpProxy, {
-    upstream: SPOTIFY_API_URL,
+    upstream: 'https://api.spotify.com',
     prefix: '/api',
     rewritePrefix: '/v1',
     preHandler: async function (request) {
@@ -17,17 +16,13 @@ export default fastifyPlugin(async function spotifyApiProxy(app) {
     },
     replyOptions: {
       rewriteRequestHeaders(request, headers) {
-        const query = request.query as Record<string, unknown>;
+        const query = request.query as { key?: string };
         if (typeof query.key !== 'string') return headers;
 
-        const extraHeaders: Record<string, string> = {};
         const auth = authorization.get(query.key);
-        if (auth) extraHeaders['authorization'] = `Bearer ${auth}`;
+        if (auth) headers['authorization'] = `Bearer ${auth}`;
 
-        return {
-          ...headers,
-          ...extraHeaders,
-        };
+        return headers;
       },
     },
   });

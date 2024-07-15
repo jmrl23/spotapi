@@ -1,18 +1,13 @@
 import type { Prisma } from '@prisma/client';
-import axios from 'axios';
 import { NotFound, Unauthorized } from 'http-errors';
 import ms from 'ms';
 import crypto from 'node:crypto';
 import qs from 'qs';
 import { type CurrentlyPlaying } from 'spotify-types';
-import {
-  SPOTIFY_CLIENT_ID,
-  SPOTIFY_CLIENT_SECRET,
-  SPOTIFY_REDIRECT_URI,
-} from '../lib/constant/env';
-import { SPOTIFY_ACCOUNTS_URL, SPOTIFY_API_URL } from '../lib/constant/spotify';
+import { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } from '../lib/constant/env';
 import { prismaClient } from '../lib/prisma';
 import scope from '../lib/scope.json';
+import { spotifyAccounts, spotifyApi } from '../lib/spotify';
 import type CacheService from './CacheService';
 
 interface Ref
@@ -40,16 +35,6 @@ interface Badge {
   style?: 'for-the-badge';
 }
 
-const accountsApi = axios.create({
-  baseURL: `${SPOTIFY_ACCOUNTS_URL}/api`,
-  headers: {
-    'content-type': 'application/x-www-form-urlencoded',
-    authorization: `Basic ${Buffer.from(
-      SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET,
-    ).toString('base64')}`,
-  },
-});
-
 export default class SpotifyService {
   constructor(private readonly cacheService: CacheService) {}
 
@@ -61,7 +46,8 @@ export default class SpotifyService {
     });
     if (existing) return await this.createRef(code);
 
-    const response = await accountsApi.post(
+    const api = spotifyAccounts('/api');
+    const response = await api.post(
       '/token',
       qs.stringify({
         code,
@@ -103,7 +89,8 @@ export default class SpotifyService {
 
       if (!oldRef) throw new Error();
 
-      const response = await accountsApi.post(
+      const api = spotifyAccounts('/api');
+      const response = await api.post(
         '/token',
         qs.stringify({
           grant_type: 'refresh_token',
@@ -180,7 +167,7 @@ export default class SpotifyService {
   }
 
   public generateAuthorizeUrl(): string {
-    return `${SPOTIFY_ACCOUNTS_URL}/authorize?${qs.stringify({
+    return `https://accounts.spotify.com/authorize?${qs.stringify({
       response_type: 'code',
       client_id: SPOTIFY_CLIENT_ID,
       scope: scope.join(' '),
@@ -191,12 +178,8 @@ export default class SpotifyService {
 
   public async getPlayer(key: string): Promise<CurrentlyPlaying | null> {
     const ref = await this.getRefByKeyOrThrow(key);
-    const url = `${SPOTIFY_API_URL}/v1/me/player`;
-    const response = await axios.get<CurrentlyPlaying>(url, {
-      headers: {
-        Authorization: `Bearer ${ref.accessToken}`,
-      },
-    });
+    const v1 = spotifyApi('/v1', ref.accessToken);
+    const response = await v1.get<CurrentlyPlaying>('/me/player');
 
     if (
       !response.data ||
