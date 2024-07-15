@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { NotFound, Unauthorized } from 'http-errors';
+import { Unauthorized, NotFound, Forbidden } from 'http-errors';
 import ms from 'ms';
 import crypto from 'node:crypto';
 import qs from 'qs';
@@ -124,7 +124,7 @@ export default class SpotifyService {
     options: OptionsWithRevalidate & {} = {},
   ): Promise<Ref> {
     const ref = await this.getRefById(id, options);
-    if (ref === null) throw new NotFound('Reference not found');
+    if (ref === null) throw new Forbidden('Reference not found');
     return ref;
   }
 
@@ -162,7 +162,7 @@ export default class SpotifyService {
     options: OptionsWithRevalidate & {} = {},
   ): Promise<Ref> {
     const ref = await this.getRefByKey(key, options);
-    if (!ref) throw new NotFound('Reference not found');
+    if (!ref) throw new Forbidden('Invalid key');
     return ref;
   }
 
