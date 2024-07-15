@@ -223,16 +223,18 @@ export default class SpotifyService {
     }
 
     const playing = player.is_playing;
-    const song = player.item?.name ?? '-';
-    let message: string = song;
+    let message: string = '';
 
     if (player.item) {
       if ('artists' in player.item) {
+        const song = player.item.name;
         const artist = player.item.artists.at(0)?.name;
+        message += song;
         if (artist) message += ` • ${artist}`;
       } else {
-        const name = player.item.show.name;
-        message += ` • ${name}`;
+        const show = player.item.show;
+        const { name, publisher } = show;
+        message = `${name} • ${publisher}`;
       }
     }
 
