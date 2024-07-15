@@ -57,6 +57,7 @@ export default asRoute(async function spotifyRoute(app) {
       url: '/badge',
       schema: {
         description: 'Generate data for custom badge',
+        tags: ['spotify', 'badge'],
         querystring: spotifyBadgeSchema,
       },
       async handler(request: FastifyRequest<{ Querystring: SpotifyBadge }>) {
