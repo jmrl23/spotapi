@@ -1,4 +1,3 @@
-import axios from 'axios';
 import type { FastifyRequest } from 'fastify';
 import { asRoute } from '../lib/util/typings';
 import spotifyApiProxy from '../plugins/spotifyApiProxy';

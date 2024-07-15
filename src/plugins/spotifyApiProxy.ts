@@ -7,10 +7,11 @@ export default fastifyPlugin(async function spotifyApiProxy(app) {
   await app.register(fastifyHttpProxy, {
     upstream: 'https://api.spotify.com',
     prefix: '/api',
-    rewritePrefix: '/v1',
+    rewritePrefix: '/',
     preHandler: async function (request) {
       const { key } = request.query as { key?: string };
       if (!key) return;
+
       const ref = await app.spotifyService.getRefByKeyOrThrow(key);
       authorization.set(key, ref.accessToken);
     },

@@ -46,24 +46,28 @@
     <main>
       <h1>SPOTAPI</h1>
       <p>
-        You may use the generated key (by adding query key) instead of adding
-        authorization header for accessing spotify apis. This may be a flaw, so
-        this application was designed to only read your activities.
+        Spotify API proxy server with added features. Use generated key for
+        accessing resources.
+      </p>
+      <p>
+        Note: once you expose your key on the public, anyone may read your
+        activities.
       </p>
       <ul>
         <li>
           <a href="/spotify/login">Login</a>
         </li>
         <li>
-          Proxied endpoint: <code>/spotify/api</code>->
-          <code>https://api.spotify.com/v1</code>
+          <a href="/docs">Swagger docs</a>
+        </li>
+        <li>
+          Proxy: <code>https://spotapi-one.vercel.app/spotify/api</code> &rarr;
+          <code>https://api.spotify.com</code>
         </li>
       </ul>
       <hr />
-      <h3>Sample usage</h3>
-      <pre>
-curl https://spotapi-one.vercel.app/spotify/api/me/player?key=000000</pre
-      >
+      <h3>sample usage</h3>
+      <pre>https://spotapi-one.vercel.app/spotify/api/me/player?key=000000</pre>
     </main>
   </body>
 </html>
