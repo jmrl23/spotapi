@@ -4,12 +4,13 @@ import { NotFound, Unauthorized } from 'http-errors';
 import ms from 'ms';
 import crypto from 'node:crypto';
 import qs from 'qs';
+import { type CurrentlyPlaying } from 'spotify-types';
 import {
   SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET,
   SPOTIFY_REDIRECT_URI,
 } from '../lib/constant/env';
-import { SPOTIFY_ACCOUNTS_URL } from '../lib/constant/spotify';
+import { SPOTIFY_ACCOUNTS_URL, SPOTIFY_API_URL } from '../lib/constant/spotify';
 import { prismaClient } from '../lib/prisma';
 import scope from '../lib/scope.json';
 import type CacheService from './CacheService';
@@ -188,38 +189,51 @@ export default class SpotifyService {
     })}`;
   }
 
-  public async generateBadgeData(url: string): Promise<Badge> {
-    const response = await axios.get(url);
-    const data: Record<string, any> = response.data;
-    const headers = response.headers;
+  public async getPlayer(key: string): Promise<CurrentlyPlaying | null> {
+    const ref = await this.getRefByKeyOrThrow(key);
+    const url = `${SPOTIFY_API_URL}/v1/me/player`;
+    const response = await axios.get<CurrentlyPlaying>(url, {
+      headers: {
+        Authorization: `Bearer ${ref.accessToken}`,
+      },
+    });
 
-    if (!headers || typeof headers.get !== 'function') {
+    if (
+      !response.data ||
+      !response.headers ||
+      typeof response.headers.get !== 'function'
+    ) {
+      return null;
+    }
+
+    return response.data;
+  }
+
+  public async generateBadgeData(key: string): Promise<Badge> {
+    const player = await this.getPlayer(key);
+
+    if (!player) {
       return {
         schemaVersion: 1,
         namedLogo: 'spotify',
-        label: 'error',
-        message: 'failed to get data',
-        color: 'red',
+        label: 'Not Playing',
+        message: 'Spotify',
         style: 'for-the-badge',
       };
     }
 
-    const contentType = headers.get('content-type');
-    if (!contentType) {
-      return {
-        schemaVersion: 1,
-        namedLogo: 'spotify',
-        label: 'not playing',
-        message: 'spotify',
-        style: 'for-the-badge',
-      };
+    const song = player.item?.name ?? '-';
+    let message: string = song;
+    if (player.item?.type === 'track' && 'artists' in player.item) {
+      const artist = player.item.artists.at(0)?.name ?? '-';
+      message = `${song} • ${artist}`;
     }
 
     return {
       schemaVersion: 1,
       namedLogo: 'spotify',
-      label: 'playing',
-      message: `${data.item.name} • ${data.item.artists[0].name}`,
+      label: 'Playing',
+      message,
       color: 'blue',
       style: 'for-the-badge',
     };

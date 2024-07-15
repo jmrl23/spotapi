@@ -31,3 +31,17 @@ export const spotifyBadgeSchema = asJsonSchema({
   },
 });
 export type SpotifyBadge = FromSchema<typeof spotifyBadgeSchema>;
+
+export const spotifyPlayerSchema = asJsonSchema({
+  type: 'object',
+  additionalProperties: false,
+  required: ['key'],
+  properties: {
+    key: {
+      type: 'string',
+      minLength: 6,
+      maxLength: 6,
+    },
+  },
+});
+export type SpotifyPlayer = FromSchema<typeof spotifyPlayerSchema>;

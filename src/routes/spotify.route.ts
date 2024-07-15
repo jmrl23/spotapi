@@ -7,6 +7,8 @@ import {
   spotifyBadgeSchema,
   type SpotifyCallbackQuery,
   spotifyCallbackQuerySchema,
+  type SpotifyPlayer,
+  spotifyPlayerSchema,
 } from '../schemas/spotify';
 
 export const prefix = '/spotify';
@@ -47,6 +49,22 @@ export default asRoute(async function spotifyRoute(app) {
       },
     })
 
+    .route({
+      method: 'GET',
+      url: '/player',
+      schema: {
+        description: 'get player',
+        tags: ['custom'],
+        querystring: spotifyPlayerSchema,
+      },
+      async handler(request: FastifyRequest<{ Querystring: SpotifyPlayer }>) {
+        const player = await this.spotifyService.getPlayer(request.query.key);
+        return {
+          player,
+        };
+      },
+    })
+
     /**
      * endpoint badge
      *
@@ -56,13 +74,12 @@ export default asRoute(async function spotifyRoute(app) {
       method: 'GET',
       url: '/badge',
       schema: {
-        description: 'Generate data for custom badge',
-        tags: ['spotify', 'badge'],
+        description: 'generate data for custom badge',
+        tags: ['custom'],
         querystring: spotifyBadgeSchema,
       },
       async handler(request: FastifyRequest<{ Querystring: SpotifyBadge }>) {
-        const url = `${request.protocol}://${request.hostname}/spotify/api/me/player?key=${request.query.key}`;
-        return this.spotifyService.generateBadgeData(url);
+        return this.spotifyService.generateBadgeData(request.query.key);
       },
     });
 });
