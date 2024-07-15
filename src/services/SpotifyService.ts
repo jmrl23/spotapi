@@ -225,12 +225,12 @@ export default class SpotifyService {
 
     const playing = player.is_playing;
     const colors = [
-      'ff0000',
-      '00ff00',
-      '0000ff',
-      'ffff00',
-      '800080',
-      'ffa500',
+      'red',
+      'green',
+      'blue',
+      'yellow',
+      'purple',
+      'orange',
     ] as const;
     const color = colors[Math.round(Math.random() * (colors.length - 1))];
     let message: string = '-';
