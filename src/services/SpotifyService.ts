@@ -9,6 +9,7 @@ import {
   SPOTIFY_CLIENT_SECRET,
   SPOTIFY_REDIRECT_URI,
 } from '../lib/constant/env';
+import { SPOTIFY_ACCOUNTS_URL } from '../lib/constant/spotify';
 import { prismaClient } from '../lib/prisma';
 import scope from '../lib/scope.json';
 import type CacheService from './CacheService';
@@ -29,8 +30,17 @@ interface OptionsWithRevalidate {
   revalidate?: boolean;
 }
 
+interface Badge {
+  schemaVersion: 1;
+  namedLogo?: string;
+  label?: string;
+  message?: string;
+  color?: string;
+  style?: 'for-the-badge';
+}
+
 const accountsApi = axios.create({
-  baseURL: 'https://accounts.spotify.com/api',
+  baseURL: `${SPOTIFY_ACCOUNTS_URL}/api`,
   headers: {
     'content-type': 'application/x-www-form-urlencoded',
     authorization: `Basic ${Buffer.from(
@@ -169,13 +179,50 @@ export default class SpotifyService {
   }
 
   public generateAuthorizeUrl(): string {
-    return `https://accounts.spotify.com/authorize?${qs.stringify({
+    return `${SPOTIFY_ACCOUNTS_URL}/authorize?${qs.stringify({
       response_type: 'code',
       client_id: SPOTIFY_CLIENT_ID,
       scope: scope.join(' '),
       redirect_uri: SPOTIFY_REDIRECT_URI,
       state: SpotifyService.randomString(16),
     })}`;
+  }
+
+  public async generateBadgeData(url: string): Promise<Badge> {
+    const response = await axios.get(url);
+    const data: Record<string, any> = response.data;
+    const headers = response.headers;
+
+    if (!headers || typeof headers.get !== 'function') {
+      return {
+        schemaVersion: 1,
+        namedLogo: 'spotify',
+        label: 'error',
+        message: 'failed to get data',
+        color: 'red',
+        style: 'for-the-badge',
+      };
+    }
+
+    const contentType = headers.get('content-type');
+    if (!contentType) {
+      return {
+        schemaVersion: 1,
+        namedLogo: 'spotify',
+        label: 'not playing',
+        message: 'spotify',
+        style: 'for-the-badge',
+      };
+    }
+
+    return {
+      schemaVersion: 1,
+      namedLogo: 'spotify',
+      label: 'playing',
+      message: `${data.item.name} • ${data.item.artists[0].name}`,
+      color: 'blue',
+      style: 'for-the-badge',
+    };
   }
 
   private static randomString(length: number): string {

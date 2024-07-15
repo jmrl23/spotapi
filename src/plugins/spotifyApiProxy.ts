@@ -1,11 +1,12 @@
 import fastifyHttpProxy from '@fastify/http-proxy';
 import fastifyPlugin from 'fastify-plugin';
+import { SPOTIFY_API_URL } from '../lib/constant/spotify';
 
 export default fastifyPlugin(async function spotifyApiProxy(app) {
   const authorization = new Map<string, string | undefined>();
 
   await app.register(fastifyHttpProxy, {
-    upstream: 'https://api.spotify.com',
+    upstream: SPOTIFY_API_URL,
     prefix: '/api',
     rewritePrefix: '/v1',
     preHandler: async function (request) {
