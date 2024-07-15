@@ -222,17 +222,24 @@ export default class SpotifyService {
       };
     }
 
+    const playing = player.is_playing;
     const song = player.item?.name ?? '-';
     let message: string = song;
-    if (player.item?.type === 'track' && 'artists' in player.item) {
-      const artist = player.item.artists.at(0)?.name ?? '-';
-      message = `${song} • ${artist}`;
+
+    if (player.item) {
+      if ('artists' in player.item) {
+        const artist = player.item.artists.at(0)?.name;
+        if (artist) message += ` • ${artist}`;
+      } else {
+        const name = player.item.show.name;
+        message += ` • ${name}`;
+      }
     }
 
     return {
       schemaVersion: 1,
       namedLogo: 'spotify',
-      label: 'Playing',
+      label: playing ? 'Playing' : 'Paused',
       message,
       color: 'blue',
       style: 'for-the-badge',
