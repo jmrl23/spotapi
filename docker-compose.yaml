@@ -1,8 +1,11 @@
 services:
   web:
     build: .
+    env_file:
+      # we'll respect prisma's DATABASE_URL so must execute `prisma db push`
+      # before composing
+      - prisma/.env
     environment:
-      NODE_ENV: production
       REDIS_URL: redis://redis
       # fill this out. https://developer.spotify.com/dashboard
       SPOTIFY_CLIENT_ID:

@@ -8,7 +8,7 @@ Spotify API proxy server
 yarn # or npm install
 ```
 
-note: if you want to run this on docker, kindly fill out required fields in the [dockerfile](./dockerfile) and [docker-compose](./docker-compose.yaml).
+note: if you want to run this on docker, run build and kindly fill out required fields inside [docker-compose](./docker-compose.yaml).
 
 ## Scripts
 
