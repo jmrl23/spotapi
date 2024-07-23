@@ -17,3 +17,8 @@ services:
       - redis
   redis:
     image: redis:7-alpine
+    volumes:
+      - redis:/usr/local/etc/redis
+
+volumes:
+  redis:
