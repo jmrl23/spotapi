@@ -4,9 +4,11 @@ WORKDIR /app
 
 COPY . .
 
-ENV NODE_ENV=production
-
 RUN yarn install
+RUN yarn run prisma db push
+RUN yarn run build
+
+ENV NODE_ENV=production
 
 ENTRYPOINT [ "node" ]
 
